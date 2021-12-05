@@ -66,7 +66,7 @@ app.post(`/courses/:courseId/discussions`,auth,async (req,res)=>{
   console.log(req.user)
   const result=await  apis.createDiscussion(req.body,parseInt(req.params.courseId),req.user)
   res.statusCode=201
-  res.send()
+  res.send(result.dataValues)
 }
 )
 
@@ -74,7 +74,7 @@ app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
   res.setHeader('Access-Control-Allow-Origin', '*');
   const result=await apis.createComment(req.body,parseInt(req.params.discussionId),req.user)
   res.statusCode=201
-  res.send()
+  res.send(result.dataValues)
 }
 )
 
