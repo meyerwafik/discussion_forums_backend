@@ -93,18 +93,25 @@ app.get(`/discussions/:discussionId/comments`,async(req,res)=>{
   // res.send(result)
 })
 
-app.post('/login',async (req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
-    // Get user input
-    const email = req.body.email;
-    const password=req.body.password;
-    // Validate user input
-    if (!(email && password)) {
-      res.status(400).send("All input is required");
-    }
-    // Validate if user exist in our database
-  const user = await apis.login(email,password)
-  res.send(user)
+app.post("/login", async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  // Get user input
+  const { email, password } = req.body;
+
+  // Validate user input
+  if (!(email && password)) {
+    res.status(400).send("All input is required");
+  }
+
+  // Validate if user exist in our database
+  const user = await apis.login(email, password);
+
+  if (!user) {
+    res.status(401).send();
+  }
+
+  res.send(user);
 });
 
 
