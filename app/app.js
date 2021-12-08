@@ -13,6 +13,8 @@ course={}
 student={}
 discussion={}
 commentObj={}
+found=false
+allowed=false
 
 const getCourses=   async (user)=>
 {
@@ -69,6 +71,45 @@ const createComment=async({content},discussionId,user)=>{
      return success
      }
    }
+
+   
+   const deleteComment=async(commentId,user)=>{
+   
+    let comment=await database.comments.findByPk(commentId)
+    console.log(comment)
+    if(!comment){
+      return {found,allowed}
+    }
+    else{
+      found=true;
+      if(comment.userId==user.id||user.role==="Admin")
+      {
+        comment.destroy();
+        allowed=true
+      }
+      return {found,allowed};
+    }
+  }
+
+
+  
+  const deleteDiscussion=async(discussionId,user)=>{
+   
+    let discussion=await database.discussions.findByPk(discussionId)
+    
+    if(!discussion){
+      return {found,allowed}
+    }
+    else{
+      found=true;
+      if(discussion.userId==user.id||user.role==="Admin")
+      {
+        discussion.destroy();
+        allowed=true
+      }
+      return {found,allowed};
+    }
+  }
 
    const createStudent=async( studentName, email, password,userRole)=>{
      let  encryptedPassword = await bcrypt.hash(password, 10);
@@ -134,4 +175,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion}

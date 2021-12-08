@@ -187,23 +187,58 @@ app.delete("/discussions/:discussionId",auth,async (req,res)=>{
     res.status(404).send({error:"Course not found"});
   }
   else{
-  res.send("Course deleted successfuly")
+    res.send("Course deleted successfuly")
   }
-  })
+})
 
 
 app.delete("/users/:userId",auth,async (req,res)=>{
-
   if(req.user.role!=="Admin"){
     res.status(400).send({error:"Invalid credentials"})
   }
   else{
-  let result=await apis.deleteStudent(req.params.userId)
-  if(!result){
-    res.status(404).send({error:"User not found"});
+    let result=await apis.deleteStudent(req.params.userId)
+    if(!result){
+      res.status(404).send({error:"User not found"});
+    }
+    else{
+      res.send("User deleted successfuly")
+    }
+  }
+})
+
+app.delete("/comments/:commentId",auth,async (req,res)=>{
+ 
+    let {found,allowed}=await apis.deleteComment(req.params.commentId,req.user)
+    console.log(found,allowed)
+    if(!found){
+      res.statusCode=404
+      res.send({error:"Comment not found"});
+    }
+    else{
+      if(!allowed){
+        res.statusCode=400
+        res.send({error:"Invalid credentials"})
+      }
+      else{
+        res.send("Comment deleted successfuly")
+      }
+    }
+})
+
+app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+  let {found,allowed}=await apis.deleteDiscussion(req.params.discussionId,req.user)
+  if(!found){
+    res.statusCode=404
+    res.send({error:"Discussion not found"});
   }
   else{
-  res.send("User deleted successfuly")
+    if(!allowed){
+      res.statusCode=400
+      res.send({error:"Invalid credentials"})
+    }
+    else{
+      res.send("Discussion deleted successfuly")
+    }
   }
-}
-  })
+})
