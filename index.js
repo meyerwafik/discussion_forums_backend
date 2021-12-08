@@ -35,6 +35,12 @@ db.sequelize.sync()
     res.send(result)
 })
 
+app.get('/courses',auth, async (req,res)=>{
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const result=  await apis.getCourses(req.user) 
+  res.send(result)
+})
+
 app.get(`/courses/:courseId/discussions`,auth,async (req,res)=>{
   res.setHeader('Access-Control-Allow-Origin', '*');
   const {course,discussions}=  await apis.getDiscussions(req.params.courseId) 
@@ -66,7 +72,20 @@ app.post(`/courses/:courseId/discussions`,auth,async (req,res)=>{
   console.log(req.user)
   const result=await  apis.createDiscussion(req.body,parseInt(req.params.courseId),req.user)
   res.statusCode=201
-  res.send(result.dataValues)
+  res.send(result)
+}
+)
+
+app.post(`/courses`,auth,async (req,res)=>{
+  if(req.user.role!=="Admin"){
+    res.status(400).send({error:"Invalid credentials"})
+  }
+  else{
+    const result=await  apis.createCourse(req.body)
+    res.statusCode=201
+    res.send(result)
+  }
+  
 }
 )
 
@@ -74,7 +93,7 @@ app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
   res.setHeader('Access-Control-Allow-Origin', '*');
   const result=await apis.createComment(req.body,parseInt(req.params.discussionId),req.user)
   res.statusCode=201
-  res.send(result.dataValues)
+  res.send(result)
 }
 )
 
@@ -108,13 +127,11 @@ app.post("/login", async (req, res) => {
   const user = await apis.login(email, password);
 
   if (!user) {
-    res.status(401).send();
+    res.status(401).send("Invalid Credentials");
   }
 
   res.send(user);
 });
-
-
 
 
 app.post("/register", async (req, res) => {
@@ -122,7 +139,7 @@ app.post("/register", async (req, res) => {
   // Our register logic starts here
   try {
     // Get user input
-    const { studentName, email, password } = req.body;
+    const { studentName, email, password,userRole } = req.body;
 
     // Validate user input
     if (!(email && password &&  studentName)) {
@@ -132,7 +149,7 @@ app.post("/register", async (req, res) => {
  
     const user = await db.users.create({
       studentName,
-      userRole:"Student",   
+      userRole,   
       email: email.toLowerCase(), // sanitize: convert email to lowercase
       pwHash: encryptedPassword,
     });
@@ -144,3 +161,52 @@ app.post("/register", async (req, res) => {
   }
 
 });
+
+app.post('/users/create',auth,async(req,res)=>{
+  if(req.user.role!=="Admin"){
+    res.status(400).send({error:"Invalid credentials"})
+  }
+  else{
+  let { studentName, email, password,userRole } = req.body;
+  const user=await apis.createStudent( studentName, email, password,userRole)
+  res.send(user)
+  }
+})
+
+app.delete("/courses/:courseId",auth,async (req,res)=>{
+let result=await apis.deleteCourse(req.params.courseId)
+if(!result){
+  res.status(404).send({error:"Course not found"});
+}
+else{
+res.send("Course deleted successfuly")
+}
+})
+
+
+app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+  let result=await apis.delete(req.params.courseId)
+  if(!result){
+    res.status(404).send({error:"Course not found"});
+  }
+  else{
+  res.send("Course deleted successfuly")
+  }
+  })
+
+
+app.delete("/users/:userId",auth,async (req,res)=>{
+
+  if(req.user.role!=="Admin"){
+    res.status(400).send({error:"Invalid credentials"})
+  }
+  else{
+  let result=await apis.deleteStudent(req.params.userId)
+  if(!result){
+    res.status(404).send({error:"User not found"});
+  }
+  else{
+  res.send("User deleted successfuly")
+  }
+}
+  })
