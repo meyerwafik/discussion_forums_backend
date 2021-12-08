@@ -7,9 +7,6 @@ var apis=require("./app/app")
 var bodyParser = require('body-parser')
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-
-
-var jwt = require('jsonwebtoken');
 var bcrypt=require('bcryptjs')
 const auth=require('./middleware/auth')
 const db = require("./app/models")
@@ -30,19 +27,19 @@ db.sequelize.sync()
 
 
  app.get('/courses',auth, async (req,res)=>{
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    //res.setHeader('Access-Control-Allow-Origin', '*');
     const result=  await apis.getCourses(req.user) 
     res.send(result)
 })
 
 app.get('/courses',auth, async (req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
+ // res.setHeader('Access-Control-Allow-Origin', '*');
   const result=  await apis.getCourses(req.user) 
   res.send(result)
 })
 
 app.get(`/courses/:courseId/discussions`,auth,async (req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
+ // res.setHeader('Access-Control-Allow-Origin', '*');
   const {course,discussions}=  await apis.getDiscussions(req.params.courseId) 
   if(!course){
     res.status(404)
@@ -54,7 +51,7 @@ app.get(`/courses/:courseId/discussions`,auth,async (req,res)=>{
 
 
 app.get('/user/:userId',auth,async(req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
+ // res.setHeader('Access-Control-Allow-Origin', '*');
   const user=await apis.getUser(req.params.userId)
   if (!user){
     res.status(404)
@@ -66,10 +63,9 @@ app.get('/user/:userId',auth,async(req,res)=>{
 
 
 app.post(`/courses/:courseId/discussions`,auth,async (req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT")
-  res.setHeader("Access-Control-Allow-Headers", "Origin", "Content-Type"," X-Auth-Token")
-  console.log(req.user)
+ // res.setHeader('Access-Control-Allow-Origin', '*');
+  //res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT")
+  //res.setHeader("Access-Control-Allow-Headers", "Origin", "Content-Type"," X-Auth-Token")
   const result=await  apis.createDiscussion(req.body,parseInt(req.params.courseId),req.user)
   res.statusCode=201
   res.send(result)
@@ -90,7 +86,7 @@ app.post(`/courses`,auth,async (req,res)=>{
 )
 
 app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
+//  res.setHeader('Access-Control-Allow-Origin', '*');
   const result=await apis.createComment(req.body,parseInt(req.params.discussionId),req.user)
   res.statusCode=201
   res.send(result)
@@ -98,7 +94,7 @@ app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
 )
 
 app.get(`/discussions/:discussionId/comments`,async(req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
+ // res.setHeader('Access-Control-Allow-Origin', '*');
   const {discussion,comments}=  await apis.getComments(req.params.discussionId)
   if(!discussion){
     res.status(404)
@@ -112,25 +108,26 @@ app.get(`/discussions/:discussionId/comments`,async(req,res)=>{
   // res.send(result)
 })
 
-app.post("/login", async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  // Get user input
-  const { email, password } = req.body;
-
-  // Validate user input
-  if (!(email && password)) {
-    res.status(400).send("All input is required");
+app.post('/login',async (req,res)=>{
+  //res.setHeader('Access-Control-Allow-Origin', '*');
+    // Get user input
+    const email = req.body.email;
+    const password=req.body.password;
+    // Validate user input
+    if (!(email && password)) {
+      res.status(400).send("All input is required");
+      return;
+    }
+    // Validate if user exist in our database
+  const user = await apis.login(email,password)
+  if(user){
+    res.send(user)
+    return
   }
-
-  // Validate if user exist in our database
-  const user = await apis.login(email, password);
-
-  if (!user) {
-    res.status(401).send("Invalid Credentials");
+  else{
+  res.status(400).send("Invalid Credentials")
   }
-
-  res.send(user);
+  
 });
 
 
@@ -164,7 +161,7 @@ app.post("/register", async (req, res) => {
 
 app.post('/users/create',auth,async(req,res)=>{
   if(req.user.role!=="Admin"){
-    res.status(400).send({error:"Invalid credentials"})
+    res.status(401).send({error:"Invalid credentials"})
   }
   else{
   let { studentName, email, password,userRole } = req.body;
@@ -190,23 +187,82 @@ app.delete("/discussions/:discussionId",auth,async (req,res)=>{
     res.status(404).send({error:"Course not found"});
   }
   else{
-  res.send("Course deleted successfuly")
+    res.send("Course deleted successfuly")
   }
-  })
+})
 
 
 app.delete("/users/:userId",auth,async (req,res)=>{
-
   if(req.user.role!=="Admin"){
-    res.status(400).send({error:"Invalid credentials"})
+    res.status(401).send({error:"Invalid credentials"})
   }
   else{
-  let result=await apis.deleteStudent(req.params.userId)
-  if(!result){
-    res.status(404).send({error:"User not found"});
+    let result=await apis.deleteStudent(req.params.userId)
+    if(!result){
+      res.status(404).send({error:"User not found"});
+    }
+    else{
+      res.send("User deleted successfuly")
+    }
+  }
+})
+
+
+app.post("/courses/users/add/:courseId/:userId",auth,async (req,res)=>{
+  if(req.user.role!=="Admin"){
+    res.status(401).send({error:"Invalid credentials"})
   }
   else{
-  res.send("User deleted successfuly")
+    let {user_courses,unique,found}=await apis.addStudent(req.params.courseId,req.params.userId)
+    if(!found){
+      res.status(400).send({error:"User or course not found"})
+    }
+    else{
+      if(!unique){
+        res.status(400).send({error:"Duplicate entry"})
+      }
+      else{
+      res.send(user_courses)
+      }
+
+    }
+
   }
-}
-  })
+
+})
+
+app.delete("/comments/:commentId",auth,async (req,res)=>{
+ 
+    let {found,allowed}=await apis.deleteComment(req.params.commentId,req.user)
+    console.log(found,allowed)
+    if(!found){
+      res.statusCode=404
+      res.send({error:"Comment not found"});
+    }
+    else{
+      if(!allowed){
+        res.statusCode=400
+        res.send({error:"Invalid credentials"})
+      }
+      else{
+        res.send("Comment deleted successfuly")
+      }
+    }
+})
+
+app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+  let {found,allowed}=await apis.deleteDiscussion(req.params.discussionId,req.user)
+  if(!found){
+    res.statusCode=404
+    res.send({error:"Discussion not found"});
+  }
+  else{
+    if(!allowed){
+      res.statusCode=400
+      res.send({error:"Invalid credentials"})
+    }
+    else{
+      res.send("Discussion deleted successfuly")
+    }
+  }
+})

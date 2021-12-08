@@ -13,6 +13,10 @@ course={}
 student={}
 discussion={}
 commentObj={}
+found=false
+allowed=false
+unique=false
+user_courses={}
 
 const getCourses=   async (user)=>
 {
@@ -70,6 +74,45 @@ const createComment=async({content},discussionId,user)=>{
      }
    }
 
+   
+   const deleteComment=async(commentId,user)=>{
+   
+    let comment=await database.comments.findByPk(commentId)
+    console.log(comment)
+    if(!comment){
+      return {found,allowed}
+    }
+    else{
+      found=true;
+      if(comment.userId==user.id||user.role==="Admin")
+      {
+        comment.destroy();
+        allowed=true
+      }
+      return {found,allowed};
+    }
+  }
+
+
+  
+  const deleteDiscussion=async(discussionId,user)=>{
+   
+    let discussion=await database.discussions.findByPk(discussionId)
+    
+    if(!discussion){
+      return {found,allowed}
+    }
+    else{
+      found=true;
+      if(discussion.userId==user.id||user.role==="Admin")
+      {
+        discussion.destroy();
+        allowed=true
+      }
+      return {found,allowed};
+    }
+  }
+
    const createStudent=async( studentName, email, password,userRole)=>{
      let  encryptedPassword = await bcrypt.hash(password, 10);
     student=await database.users.create({
@@ -77,6 +120,25 @@ const createComment=async({content},discussionId,user)=>{
      })
      return student;
     }
+
+    const addStudent=async(courseId,userId)=>{
+      found=false
+      unique=false
+      let course=await database.courses.findByPk(courseId)
+      let user=await database.users.findByPk(userId)
+      let result=await database.user_courses.findOne({ where: { userId,courseId} })
+      if(course && user){
+        found=true
+      }
+     if(!result){
+      unique=true
+     }
+      if(unique && found){
+       user_courses=await database.user_courses.create({userId,courseId})  
+      }
+      return {user_courses,unique,found}
+    }
+    
 
    const deleteStudent=async(userId)=>{
     let success=false;
@@ -134,4 +196,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent}
