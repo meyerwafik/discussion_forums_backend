@@ -15,6 +15,8 @@ discussion={}
 commentObj={}
 found=false
 allowed=false
+unique=false
+user_courses={}
 
 const getCourses=   async (user)=>
 {
@@ -119,6 +121,25 @@ const createComment=async({content},discussionId,user)=>{
      return student;
     }
 
+    const addStudent=async(courseId,userId)=>{
+      found=false
+      unique=false
+      let course=await database.courses.findByPk(courseId)
+      let user=await database.users.findByPk(userId)
+      let result=await database.user_courses.findOne({ where: { userId,courseId} })
+      if(course && user){
+        found=true
+      }
+     if(!result){
+      unique=true
+     }
+      if(unique && found){
+       user_courses=await database.user_courses.create({userId,courseId})  
+      }
+      return {user_courses,unique,found}
+    }
+    
+
    const deleteStudent=async(userId)=>{
     let success=false;
     let user=await database.users.findByPk(userId)
@@ -175,4 +196,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent}
