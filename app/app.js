@@ -5,7 +5,6 @@ var jwt = require('jsonwebtoken');
 var bcrypt=require('bcryptjs');
 const dotenv=require("dotenv").config();
 // const user = require("./models/user");
-courses = []
 discussions=[]
 comments=[]
 discussion={}
@@ -13,11 +12,13 @@ course={}
 discussion={}
 commentObj={}
 
-const getCourses=   async (user)=>
-{
-  courses = await database.users.findOne({where:{id:user.id},include:['courses']});
-  return coursesArray;  
-}
+const getCourses = async (user) => {
+  const courses = await database.users.findOne({
+    where: { id: user.id },
+    include: ["courses"],
+  });
+  return courses;
+};
 
 const getDiscussions=   async (courseId)=>
 {
