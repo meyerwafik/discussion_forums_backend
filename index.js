@@ -181,12 +181,15 @@ res.send("Course deleted successfuly")
 })
 
 
-app.delete("/courses/:courseId/users/",auth,async (req,res)=>{
+app.patch("/courses/:courseId/users/",auth,async (req,res)=>{
   if(req.user.role!=="Admin"){
     res.status(401).send({error:"Invalid credentials"})
   }
   else{
-    
+    if (req.body.operation !== 'delete') {
+      res.status(400).send({error:"You need to specify a supportd operation"})
+    }
+
     let {userFound,courseFound,userCorsesFound}=await apis.deleteStudents(req.params.courseId,req.body.ids)
     if(!userFound && !courseFound){
       res.status(400).send({error:"User and course not found"})
