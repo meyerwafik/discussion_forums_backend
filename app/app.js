@@ -14,6 +14,9 @@ student={}
 discussion={}
 commentObj={}
 found=false
+courseFound=false
+userFound=false
+userCoursesFound=false
 allowed=false
 unique=false
 user_courses={}
@@ -138,6 +141,43 @@ const createComment=async({content},discussionId,user)=>{
       }
       return {user_courses,unique,found}
     }
+
+
+    const deleteStudents=async(courseId,ids)=>{
+      courseFound=false
+      userFound=true
+      userCoursesFound=false
+      let course=await database.courses.findByPk(courseId)
+      if(course){
+        courseFound=true
+      }
+      for (const i of ids){
+      
+      let user=await database.users.findByPk(i)
+      console.log(i)
+      if(!user){
+        userFound=false
+        break;
+      }
+    }
+    if(userFound&&courseFound){
+      userCoursesFound=true
+  
+      for(const i of ids)
+      {
+        let result=await database.user_courses.findOne({ where: { userId:i,courseId} })
+      
+        if(!result){
+          userCoursesFound=false
+        }
+        else{
+          result.destroy()
+        }
+       
+      }
+      }  
+      return {userFound,courseFound,userCoursesFound}
+    }
     
     const getStudentsByCourse = async (courseId) => {
       return database.users.findAll({
@@ -210,4 +250,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent, getStudentsByCourse}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent, getStudentsByCourse,deleteStudents}

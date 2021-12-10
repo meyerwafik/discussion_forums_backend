@@ -181,6 +181,38 @@ res.send("Course deleted successfuly")
 })
 
 
+app.delete("/courses/:courseId/users/",auth,async (req,res)=>{
+  if(req.user.role!=="Admin"){
+    res.status(401).send({error:"Invalid credentials"})
+  }
+  else{
+    
+    let {userFound,courseFound,userCorsesFound}=await apis.deleteStudents(req.params.courseId,req.body.ids)
+    if(!userFound && !courseFound){
+      res.status(400).send({error:"User and course not found"})
+    }
+    else if(!userFound){
+      res.status(400).send({error:"User not found"})
+    }
+    else if(!courseFound){
+      res.status(400).send({error:"Course not found"})
+    }
+    else{
+  
+
+      if(!userCoursesFound){
+        res.status(400).send({error:"Some users not enrolled"})
+      }
+      else{
+      res.send("Users deleted successfuly from course")
+      }
+
+    }
+
+  }
+
+})
+
 // app.delete("/discussions/:discussionId",auth,async (req,res)=>{
 //   let result=await apis.delete(req.params.courseId)
 //   if(!result){
