@@ -181,15 +181,15 @@ res.send("Course deleted successfuly")
 })
 
 
-app.delete("/discussions/:discussionId",auth,async (req,res)=>{
-  let result=await apis.delete(req.params.courseId)
-  if(!result){
-    res.status(404).send({error:"Course not found"});
-  }
-  else{
-    res.send("Course deleted successfuly")
-  }
-})
+// app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+//   let result=await apis.delete(req.params.courseId)
+//   if(!result){
+//     res.status(404).send({error:"Course not found"});
+//   }
+//   else{
+//     res.send("Course deleted successfuly")
+//   }
+// })
 
 
 app.delete("/users/:userId",auth,async (req,res)=>{
@@ -207,8 +207,17 @@ app.delete("/users/:userId",auth,async (req,res)=>{
   }
 })
 
+app.get("/courses/:courseId/users/", auth, async (req, res) => {
+  if(req.user.role!=="Admin"){
+    res.status(401).send({error:"Invalid credentials"})
+  }
+  else{
+    const users = await apis.getStudentsByCourse(req.params.courseId)
+    res.send(users)
+  }
+})
 
-app.post("/courses/users/add/:courseId/:userId",auth,async (req,res)=>{
+app.post("/courses/:courseId/users/:userId",auth,async (req,res)=>{
   if(req.user.role!=="Admin"){
     res.status(401).send({error:"Invalid credentials"})
   }

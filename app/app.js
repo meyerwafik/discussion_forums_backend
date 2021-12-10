@@ -20,11 +20,11 @@ user_courses={}
 
 const getCourses=   async (user)=>
 {
-  if(user.role==="Student"){
-  courses = await database.users.findOne({where:{id:user.id},include:['courses']});
+  if(user.role==="Admin"){
+    courses=await database.courses.findAll();
   }
   else{
-    courses=await database.courses.findAll();
+    courses = await database.users.findOne({where:{id:user.id},include:['courses']});
   }
   return courses;  
 }
@@ -139,6 +139,20 @@ const createComment=async({content},discussionId,user)=>{
       return {user_courses,unique,found}
     }
     
+    const getStudentsByCourse = async (courseId) => {
+      return database.users.findAll({
+        attributes: ['id', 'studentName'],
+        include: [{
+          model:database.courses,
+          attributes: [],
+          through: {
+            attributes: []
+          },
+          as: 'courses'
+        }],
+        where: { "$courses.id$": courseId }
+      })
+    }
 
    const deleteStudent=async(userId)=>{
     let success=false;
@@ -196,4 +210,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent, getStudentsByCourse}
