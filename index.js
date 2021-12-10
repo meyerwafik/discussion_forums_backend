@@ -69,6 +69,7 @@ app.post(`/courses/:courseId/discussions`,auth,async (req,res)=>{
   const result=await  apis.createDiscussion(req.body,parseInt(req.params.courseId),req.user)
   res.statusCode=201
   res.send(result)
+  console.log(result)
 }
 )
 
@@ -181,15 +182,15 @@ res.send("Course deleted successfuly")
 })
 
 
-app.delete("/discussions/:discussionId",auth,async (req,res)=>{
-  let result=await apis.delete(req.params.courseId)
-  if(!result){
-    res.status(404).send({error:"Course not found"});
-  }
-  else{
-    res.send("Course deleted successfuly")
-  }
-})
+// app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+//   let result=await apis.delete(req.params.courseId)
+//   if(!result){
+//     res.status(404).send({error:"Course not found"});
+//   }
+//   else{
+//     res.send("Course deleted successfuly")
+//   }
+// })
 
 
 app.delete("/users/:userId",auth,async (req,res)=>{
@@ -207,8 +208,17 @@ app.delete("/users/:userId",auth,async (req,res)=>{
   }
 })
 
+app.get("/courses/:courseId/users/", auth, async (req, res) => {
+  if(req.user.role!=="Admin"){
+    res.status(401).send({error:"Invalid credentials"})
+  }
+  else{
+    const users = await apis.getStudentsByCourse(req.params.courseId)
+    res.send(users)
+  }
+})
 
-app.post("/courses/users/add/:courseId/:userId",auth,async (req,res)=>{
+app.post("/courses/:courseId/users/:userId",auth,async (req,res)=>{
   if(req.user.role!=="Admin"){
     res.status(401).send({error:"Invalid credentials"})
   }
@@ -251,7 +261,9 @@ app.delete("/comments/:commentId",auth,async (req,res)=>{
 })
 
 app.delete("/discussions/:discussionId",auth,async (req,res)=>{
+  console.log("🚀 ~ file: index.js ~ line 256 ~ app.delete ~ req.params", req.params)
   let {found,allowed}=await apis.deleteDiscussion(req.params.discussionId,req.user)
+  console.log("🚀 ~ file: index.js ~ line 257 ~ app.delete ~ found,allowed", found,allowed)
   if(!found){
     res.statusCode=404
     res.send({error:"Discussion not found"});
@@ -266,3 +278,4 @@ app.delete("/discussions/:discussionId",auth,async (req,res)=>{
     }
   }
 })
+

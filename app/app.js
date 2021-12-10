@@ -20,11 +20,11 @@ user_courses={}
 
 const getCourses=   async (user)=>
 {
-  if(user.role==="Student"){
-  courses = await database.users.findOne({where:{id:user.id},include:['courses']});
+  if(user.role==="Admin"){
+    courses=await database.courses.findAll();
   }
   else{
-    courses=await database.courses.findAll();
+    courses = await database.users.findOne({where:{id:user.id},include:['courses']});
   }
   return courses;  
 }
@@ -98,6 +98,7 @@ const createComment=async({content},discussionId,user)=>{
   const deleteDiscussion=async(discussionId,user)=>{
    
     let discussion=await database.discussions.findByPk(discussionId)
+    console.log("🚀 ~ file: app.js ~ line 101 ~ deleteDiscussion ~ discussion", discussion)
     
     if(!discussion){
       return {found,allowed}
@@ -139,6 +140,22 @@ const createComment=async({content},discussionId,user)=>{
       return {user_courses,unique,found}
     }
     
+    const getStudentsByCourse = async (courseId) => {
+      // return database.user_courses.findAll({ include:["user"], where: {courseId} })
+      // return database.courses.findAll({ include:database.users, where: {courseId} })
+      return database.users.findAll({
+        attributes: ['id', 'studentName'],
+        include: [{
+          model:database.courses,
+          attributes: [],
+          through: {
+            attributes: []
+          },
+          as: 'courses'
+        }],
+        where: { "$courses.id$": courseId }
+      })
+    }
 
    const deleteStudent=async(userId)=>{
     let success=false;
@@ -162,7 +179,7 @@ const getComments=  async (discussionId,userToken)=>
 // commentsArray=await database.discussions.findByPk(discussionId,{include:["comments"]})
 // return commentsArray
 
-discussion=await database.discussions.findByPk(discussionId)
+discussion=await database.discussions.findByPk(discussionId, {include:["user", "course"]}) 
 comments=await database.comments.findAll({where:{discussionId:discussionId},include:["user"]})
 //  discussionsArray=await database.courses.findByPk(courseId,{include:['discussions']})
   return {comments,discussion};  
@@ -196,4 +213,4 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent}
+module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent, getStudentsByCourse}

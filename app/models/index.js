@@ -53,6 +53,11 @@ db.comments.belongsTo(db.users, {
 
 const user_courses = sequelize.define('user_courses', {});
 db.users.belongsToMany(db.courses, {through: user_courses});
+// db.users.belongsToMany(db.courses, {
+//   through: user_courses,
+//   foreignKey: "userId",
+//   as: "user",
+// });
 db.courses.belongsToMany(db.users, {through: user_courses});
 db.user_courses=user_courses;
 

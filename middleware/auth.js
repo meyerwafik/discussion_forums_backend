@@ -4,10 +4,17 @@ const config = process.env;
 
 const verifyToken = (req, res, next) => {
     
+    console.log(req.headers["authorization"])
+    console.log(req.headers["Authorization"])
     const bearerHeader = req.headers["authorization"];
-       const bearer = bearerHeader.split(' ');
+
+    if (!bearerHeader) {
+        return res.status(401).send("No Authorization Header");
+    }
+    const bearer = bearerHeader.split(' ');
        const bearerToken = bearer[1];
        
+
        req.token = bearerToken;
     if (!req.token) {
         return res.status(403).send("A token is required for authentication");
@@ -16,6 +23,8 @@ const verifyToken = (req, res, next) => {
         const decoded = jwt.verify(req.token, config.TOKEN_KEY);
         req.user = decoded;
     } catch (err) {
+        console.log("🚀 ~ file: auth.js ~ line 24 ~ verifyToken ~ err", bearerToken)
+        console.log("🚀 ~ file: auth.js ~ line 24 ~ verifyToken ~ err", err)
         return res.status(401).send("Invalid Token");
     }
     return next();
