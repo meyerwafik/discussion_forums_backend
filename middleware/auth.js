@@ -5,6 +5,9 @@ const config = process.env;
 const verifyToken = (req, res, next) => {
     
     const bearerHeader = req.headers["authorization"];
+    if (!bearerHeader) {
+        return res.status(401).send("No Authorization Header");
+    }
        const bearer = bearerHeader.split(' ');
        const bearerToken = bearer[1];
        

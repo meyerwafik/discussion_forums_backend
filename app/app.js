@@ -162,7 +162,7 @@ const getComments=  async (discussionId,userToken)=>
 // commentsArray=await database.discussions.findByPk(discussionId,{include:["comments"]})
 // return commentsArray
 
-discussion=await database.discussions.findByPk(discussionId)
+discussion=await database.discussions.findByPk(discussionId, {include:["user", "course"]})
 comments=await database.comments.findAll({where:{discussionId:discussionId},include:["user"]})
 //  discussionsArray=await database.courses.findByPk(courseId,{include:['discussions']})
   return {comments,discussion};  
