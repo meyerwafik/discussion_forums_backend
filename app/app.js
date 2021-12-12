@@ -247,8 +247,8 @@ const init = async () => {
   u3 = await database.users.create({ studentName: "Marina Hany", email: "marina.hany@gmail.com", pwHash: await bcrypt.hash("justapassword", 10), userRole: "Admin" })
   c1 = await database.courses.create({ courseName: "Programming 1", courseDescription: "The aim of this course is for the students to have a basic understanding of structured programming using C++" })
   c2 = await database.courses.create({ courseName: "Objected Oriented Programming", courseDescription: "The aim of this course is for the students to have a deep understanding of object oriented programming using Java" })
-  d1 = await database.discussions.create({ title: "Arrays", discDescription: "This is a forum for discussing the uses and the syntax of arrays." })
-  d2 = await database.discussions.create({ title: "Arraylists", discDescription: "This is a forum for discussing the uses and the syntax of arrayslists." })
+  d1 = await database.discussions.create({ title: "Arrays",courseId:c1.id,userId:u3.id })
+  d2 = await database.discussions.create({ title: "Arraylists" , courseId: c1.id, userId: u3.id})
 }
 
 module.exports = { getCourses, getDiscussions, createDiscussion, getComments, createComment, login, getUser, deleteCourse, deleteStudent, createStudent, createCourse, deleteComment, deleteDiscussion, addStudent, getStudentsByCourse, deleteStudents, init}

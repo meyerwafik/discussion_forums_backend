@@ -23,3 +23,21 @@ Run the following command after the ```npm i```
 ```
 npm run dev
 ```
+
+## Static Data
+Some static data were created when starting the system by the function ```init()``` like:
+
+
+###User 1 (student): 
+email: meyer.wafik@gmail.com
+password: password
+
+
+###User 2 (student):
+email: youssef.magdy@gmail.com
+password: mypassword
+
+
+###User 3 (Tutor):
+email:marina.hany@gmail.com
+password: justapassword
