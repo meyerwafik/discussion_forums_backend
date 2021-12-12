@@ -4,7 +4,6 @@ const database = require("./models");
 var jwt = require('jsonwebtoken');
 var bcrypt=require('bcryptjs');
 const dotenv=require("dotenv").config();
-// const user = require("./models/user");
 courses = []
 discussions=[]
 comments=[]
@@ -37,7 +36,6 @@ const getDiscussions=   async (courseId)=>
 {
   course=await database.courses.findByPk(courseId)
   discussions=await database.discussions.findAll({where:{courseId:courseId},include:["user"]})
-//  discussionsArray=await database.courses.findByPk(courseId,{include:['discussions']})
   return {discussions,course};  
 }
 
@@ -210,15 +208,8 @@ const createComment=async({content},discussionId,user)=>{
 
 const getComments=  async (discussionId,userToken)=>
 {
-// jwt.verify(userToken,process.env.TOKEN_KEY,function(err,decode){
-//   d=getDiscussions(discussionId,userToken)//Last Edited
-// })
-// commentsArray=await database.discussions.findByPk(discussionId,{include:["comments"]})
-// return commentsArray
-
 discussion=await database.discussions.findByPk(discussionId, {include:["user", "course"]})
 comments=await database.comments.findAll({where:{discussionId:discussionId},include:["user"]})
-//  discussionsArray=await database.courses.findByPk(courseId,{include:['discussions']})
   return {comments,discussion};  
   
 }
@@ -250,4 +241,14 @@ u = await database.users.findOne({ where: { email: email} })
   return u
 } 
 
-module.exports={getCourses,getDiscussions,createDiscussion,getComments,createComment,login,getUser,deleteCourse,deleteStudent,createStudent,createCourse,deleteComment,deleteDiscussion,addStudent, getStudentsByCourse,deleteStudents}
+const init = async () => {
+  u1 = await database.users.create({ studentName: "Meyer Wafik", email: "meyer.wafik@gmail.com", pwHash: await bcrypt.hash("password", 10), userRole: "Student" })
+  u2 = await database.users.create({ studentName: "Youssef Magdy", email: "youssef.magdy@gmail.com", pwHash: await bcrypt.hash("mypassword", 10), userRole: "Student" })
+  u3 = await database.users.create({ studentName: "Marina Hany", email: "marina.hany@gmail.com", pwHash: await bcrypt.hash("justapassword", 10), userRole: "Admin" })
+  c1 = await database.courses.create({ courseName: "Programming 1", courseDescription: "The aim of this course is for the students to have a basic understanding of structured programming using C++" })
+  c2 = await database.courses.create({ courseName: "Objected Oriented Programming", courseDescription: "The aim of this course is for the students to have a deep understanding of object oriented programming using Java" })
+  d1 = await database.discussions.create({ title: "Arrays", discDescription: "This is a forum for discussing the uses and the syntax of arrays." })
+  d2 = await database.discussions.create({ title: "Arraylists", discDescription: "This is a forum for discussing the uses and the syntax of arrayslists." })
+}
+
+module.exports = { getCourses, getDiscussions, createDiscussion, getComments, createComment, login, getUser, deleteCourse, deleteStudent, createStudent, createCourse, deleteComment, deleteDiscussion, addStudent, getStudentsByCourse, deleteStudents, init}

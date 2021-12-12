@@ -15,8 +15,9 @@ const port=process.env.PORT||8000;
 
 
 
-db.sequelize.sync()
+db.sequelize.sync({force:true})
   .then((result) => {
+    apis.init();
     app.listen(port, () => {
       console.log('Server started');
     })
@@ -27,19 +28,16 @@ db.sequelize.sync()
 
 
  app.get('/courses',auth, async (req,res)=>{
-    //res.setHeader('Access-Control-Allow-Origin', '*');
     const result=  await apis.getCourses(req.user) 
     res.send(result)
 })
 
 app.get('/courses',auth, async (req,res)=>{
- // res.setHeader('Access-Control-Allow-Origin', '*');
   const result=  await apis.getCourses(req.user) 
   res.send(result)
 })
 
 app.get(`/courses/:courseId/discussions`,auth,async (req,res)=>{
- // res.setHeader('Access-Control-Allow-Origin', '*');
   const {course,discussions}=  await apis.getDiscussions(req.params.courseId) 
   if(!course){
     res.status(404)
@@ -51,7 +49,6 @@ app.get(`/courses/:courseId/discussions`,auth,async (req,res)=>{
 
 
 app.get('/user/:userId',auth,async(req,res)=>{
- // res.setHeader('Access-Control-Allow-Origin', '*');
   const user=await apis.getUser(req.params.userId)
   if (!user){
     res.status(404)
@@ -63,9 +60,6 @@ app.get('/user/:userId',auth,async(req,res)=>{
 
 
 app.post(`/courses/:courseId/discussions`,auth,async (req,res)=>{
- // res.setHeader('Access-Control-Allow-Origin', '*');
-  //res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT")
-  //res.setHeader("Access-Control-Allow-Headers", "Origin", "Content-Type"," X-Auth-Token")
   const result=await  apis.createDiscussion(req.body,parseInt(req.params.courseId),req.user)
   res.statusCode=201
   res.send(result)
@@ -86,7 +80,6 @@ app.post(`/courses`,auth,async (req,res)=>{
 )
 
 app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
-//  res.setHeader('Access-Control-Allow-Origin', '*');
   const result=await apis.createComment(req.body,parseInt(req.params.discussionId),req.user)
   res.statusCode=201
   res.send(result)
@@ -94,7 +87,6 @@ app.post(`/discussions/:discussionId/comments`,auth,async (req,res)=>{
 )
 
 app.get(`/discussions/:discussionId/comments`,async(req,res)=>{
- // res.setHeader('Access-Control-Allow-Origin', '*');
   const {discussion,comments}=  await apis.getComments(req.params.discussionId)
   if(!discussion){
     res.status(404)
@@ -102,14 +94,9 @@ app.get(`/discussions/:discussionId/comments`,async(req,res)=>{
     return;
   }
   res.send({discussion,comments})
-  // res.setHeader('Access-Control-Allow-Origin', '*');
-  // const result= await apis.getComments(req.params.discussionId)
-  // console.log(result)
-  // res.send(result)
 })
 
 app.post('/login',async (req,res)=>{
-  //res.setHeader('Access-Control-Allow-Origin', '*');
     // Get user input
     const email = req.body.email;
     const password=req.body.password;
@@ -215,16 +202,6 @@ app.patch("/courses/:courseId/users/",auth,async (req,res)=>{
   }
 
 })
-
-// app.delete("/discussions/:discussionId",auth,async (req,res)=>{
-//   let result=await apis.delete(req.params.courseId)
-//   if(!result){
-//     res.status(404).send({error:"Course not found"});
-//   }
-//   else{
-//     res.send("Course deleted successfuly")
-//   }
-// })
 
 
 app.delete("/users/:userId",auth,async (req,res)=>{
