@@ -1,9 +1,9 @@
 var mysql = require('mysql2');
 var connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : 'admin',
-    database : 'forums'
+    host     : process.env.host,
+    user     : process.env.user,
+    password : process.env.dbpassword,
+    database : process.env.database
 });
 
 connection.connect(function(err) {
